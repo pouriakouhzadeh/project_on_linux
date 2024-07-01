@@ -101,7 +101,7 @@ class TrainModels:
             return(0, )
 
         try :
-            if wins + loses >= 0.2 * ((QTY * 100)/100):  # این شرط باید بر اساس لاجیک مورد نظر شما تنظیم شود
+            if wins + loses >= 0.2 * ((QTY * 10)/100):  # این شرط باید بر اساس لاجیک مورد نظر شما تنظیم شود
                 return (ACC/100, )
             else:
                 return (0, )
