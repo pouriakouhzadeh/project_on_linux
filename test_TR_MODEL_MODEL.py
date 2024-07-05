@@ -17,5 +17,5 @@ currency_pair = "GBPUSD60"
 currency_data = read_data(f"{currency_pair}.csv", 21000)
 TRMM = TrainModels()
 # [(2, 12), (2, 30), (30, 800), (10000, 20000), (1000, 3000), (52, 75), (8, 18)]
-model, feature_indicts, scaler , acc= TRMM.Train(currency_data.copy(), 5, 30, 500, 12500, 2000, 50, [8,10,12,14,16,20,18])
+model, feature_indicts, scaler , acc= TRMM.Train(currency_data.copy(), 2, 10, 100, 10000, 200, 52, [8,10,12,14,16,20,18])
 print(feature_indicts)

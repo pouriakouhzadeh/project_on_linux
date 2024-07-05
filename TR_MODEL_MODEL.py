@@ -89,6 +89,7 @@ class TrainModelsReturn:
             return 0, 0, 0, 0
 
     def Train(self, data, depth, page, feature, QTY, iterations, Thereshhold, primit_hours=[]):
+        fs = FeatureSelection_for_TMM()
         try:
             print(f"depth:{depth}, page:{page}, features:{feature}, QTY:{QTY}, iter:{iterations}, Thereshhold:{Thereshhold}, primit_hours:{primit_hours}")
             data = data[-QTY:]
@@ -99,8 +100,7 @@ class TrainModelsReturn:
             data, target = PageCreatorParallel().create_dataset(data, target, page)
             primit_hours = primit_hours[page:]
             data, target = DeleteRow().exec(data, target, primit_hours)
-            fs = FeatureSelection_for_TMM()
-            selected_data, selected_features, indices = fs.select(data, target, feature)
+            selected_data ,selected_columns = fs.select(data, target, feature, model)
             data = selected_data.copy()
             X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=0.1, random_state=1234)
 
@@ -146,7 +146,7 @@ class TrainModelsReturn:
             accuracy = 0.75
             if acc > accuracy or f1 > accuracy or balanced_acc > accuracy :
                 print("END of Training model successfully , return model and parameters")
-                return model, indices, scaler, acc
+                return model, selected_columns, scaler, acc
             else:
                 print(f"ACC score is {acc} and this is less than 0.70")
                 return 0, 0, 0, 0
