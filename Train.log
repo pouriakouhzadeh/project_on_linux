@@ -13,3 +13,5 @@
 2024-07-05 08:22:23,311 - ERROR - Cannot read parameters file for USDCHF60, added to list for training. Error: Parameters file not found for USDCHF60
 2024-07-05 08:22:23,311 - INFO - Currency list length: 11
 2024-07-05 08:22:23,311 - INFO - Concurrency level: 11
+2024-07-05 08:34:40,797 - ERROR - Error processing AUDUSD60: Worker exited prematurely: signal 9 (SIGKILL) Job: 3.
+2024-07-05 08:34:40,836 - ERROR - Processing failed for AUDUSD60
