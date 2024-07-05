@@ -4463,3 +4463,9 @@
 2024-07-04 23:56:13,439 ERROR:Cannot read parameters file for USDCHF60, added to list for training. Error: Parameters file not found for USDCHF60
 2024-07-04 23:56:13,439 INFO:Currency list length: 9
 2024-07-04 23:56:13,439 INFO:Concurrency level: 9
+2024-07-05 08:05:51,820 INFO:Start training model with depth = 2, pages = 10, iteration = 1000
+2024-07-05 08:05:52,077 INFO:End of training model
+2024-07-05 08:05:52,114 INFO:F1_score: 0.8307692307692308, ACC:71.05263157894737, Balanced_acc = 0.5, wins: 27, loses: 11
+2024-07-05 08:13:01,701 INFO:Start training model with depth = 2, pages = 10, iteration = 1000
+2024-07-05 08:13:01,963 INFO:End of training model
+2024-07-05 08:13:02,056 INFO:F1_score: 0.8307692307692308, ACC:71.05263157894737, Balanced_acc = 0.5, wins: 27, loses: 11

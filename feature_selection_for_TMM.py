@@ -9,5 +9,5 @@ class FeatureSelection_for_TMM:
         importance_df = importance_df.sort_values(by='Importance', ascending=False)
         selected_features = importance_df.head(num_features)['Feature']
         selected_columns = [data.columns.get_loc(feature) for feature in selected_features]
-
-        return selected_features, selected_columns
+        X_selected = data.iloc[:, selected_columns]
+        return X_selected, selected_columns

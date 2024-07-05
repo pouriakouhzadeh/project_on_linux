@@ -13,7 +13,7 @@ import numpy as np
 import gc
 from sklearn.metrics import f1_score, confusion_matrix
 import math
-
+from CREATEMODEL import CreateModel
 class TrainModelsReturn:
 
     def normalize_data(self, X_train, X_test):
@@ -90,6 +90,7 @@ class TrainModelsReturn:
 
     def Train(self, data, depth, page, feature, QTY, iterations, Thereshhold, primit_hours=[]):
         fs = FeatureSelection_for_TMM()
+        model = CreateModel.create(data, iterations, depth)
         try:
             print(f"depth:{depth}, page:{page}, features:{feature}, QTY:{QTY}, iter:{iterations}, Thereshhold:{Thereshhold}, primit_hours:{primit_hours}")
             data = data[-QTY:]
@@ -119,21 +120,6 @@ class TrainModelsReturn:
 
         if iterations < 1000:
             iterations = 1000
-
-        model = CatBoostClassifier(
-            iterations=iterations,
-            learning_rate=0.005,
-            depth=depth,
-            loss_function='Logloss',
-            verbose=100,
-            task_type='CPU',
-            random_state=42,
-            eval_metric='F1',
-            early_stopping_rounds=500,
-            l2_leaf_reg=5,
-            subsample=0.9,
-            bagging_temperature=1,
-        )
 
         try:
             print(f"Start training model with depth = {depth}, pages = {page}, iteration = {iterations}")
