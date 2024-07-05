@@ -58,7 +58,9 @@ def generate_individual(param_space):
 # تعریف toolbox
 toolbox = base.Toolbox()
 # def Train(self, data,  depth,  page,  feature,   QTY,         iter,        Thereshhold, primit_hours=[]):
-param_space = [         (6, 12),(1, 20),(30, 800),(2000, 6000),(1000, 3000), (52, 75), (8, 18)]
+param_space = [(4, 10),(1, 20),(30, 800),(2000, 6999),(1000, 10000), (50, 90), (0.01, 0.3), (1, 10), (True, False), (1,10), (8, 18)]
+    # def Train(depth,   page,  feature,      QTY,        iter,    Thereshhold,learning_rate, l2_leaf_reg, bootstrap, scale_pos_weight, primit_hours=[]):
+
 toolbox.register("individual", generate_individual, param_space)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("evaluate", create_task_for_individual)

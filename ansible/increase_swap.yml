@@ -1,0 +1,38 @@
+---
+- name: Increase swap memory
+  hosts: workers
+  become: yes
+  vars_files:
+    - vault.yml
+  tasks:
+    - name: Create swap file
+      command: fallocate -l 2G /swapfile
+      args:
+        creates: /swapfile
+
+    - name: Set swap file permissions
+      file:
+        path: /swapfile
+        state: file
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Make swap file
+      command: mkswap /swapfile
+      when: ansible_facts.swapfree_mb == 0
+
+    - name: Enable swap file
+      command: swapon /swapfile
+      when: ansible_facts.swapfree_mb == 0
+
+    - name: Add swap file to fstab
+      lineinfile:
+        path: /etc/fstab
+        line: '/swapfile none swap sw 0 0'
+        create: yes
+        state: present
+        insertafter: EOF
+
+    - name: Verify swap is active
+      command: swapon --show

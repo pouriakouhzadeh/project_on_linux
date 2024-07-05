@@ -42,19 +42,19 @@ class CrossValidation:
         if iter < 1000 :
             iter = 1000
         model = CatBoostClassifier(
-            iterations=iter, # شروع با تعداد زیادی تکرار
+            iterations=iter,
             learning_rate=0.01,
             depth=depth,
-            l2_leaf_reg=5,
             loss_function='Logloss',
-            verbose=False,
+            eval_metric='AUC',
+            verbose=50,
             task_type='CPU',
             random_state=42
         )
 
         try :
             print("Start coross valiation ...")
-            kf = KFold(n_splits=5, shuffle=True, random_state=42)
+            kf = KFold(n_splits=3, shuffle=True, random_state=42)
             scores = cross_val_score(model, X_train, y_train, cv=kf, scoring='accuracy')
             print("k_fold ACC = ", scores)
             print("k_fold ACC mean = ", np.mean(scores))

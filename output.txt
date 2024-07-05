@@ -1,0 +1,27 @@
+ Number of CSV files wating for making answer is :  11
+Start to predicting AUDCHF :
+reading AUDCHF60.csv
+Runing Desision class for forcasting ...
+Primit houre is allowed ...
+Position = SELL
+Answer = [0.80771662 0.19228338]
+remove csv file
+-----------------------------------
+There is no saved model for AUDCAD so delete csv file
+Error in reading some files related to : EURGBP so delete csv file
+There is no saved model for EURUSD so delete csv file
+There is no saved model for EURAUD so delete csv file
+Start to predicting AUDNZD :
+reading AUDNZD60.csv
+Runing Desision class for forcasting ...
+Primit houre is allowed ...
+Position = SELL
+Answer = [0.61936529 0.38063471]
+remove csv file
+-----------------------------------
+There is no saved model for USDCAD so delete csv file
+There is no saved model for USDCHF so delete csv file
+Error in reading some files related to : EURCHF so delete csv file
+There is no saved model for GBPUSD so delete csv file
+Error in reading some files related to : AUDUSD so delete csv file
+Main Expert showing you the progress of next job ...

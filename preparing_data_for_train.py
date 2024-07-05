@@ -8,7 +8,59 @@ import concurrent.futures
 import threading
 from FIBONACHI import FibonacciRetracement
 # from sklearn.preprocessing import MinMaxScaler
+import sys
+import warnings
+from scipy.signal import lfilter
+
+# تنظیم سطح warning‌ها به حداقل
+warnings.simplefilter('ignore')
+
+# تنظیم خروجی استاندارد به یک فایل
+# sys.stdout = open('output.txt', 'w')
+
+
 class PREPARE_DATA_FOR_TRAIN :
+
+    def calculate_vwap(self, close , volume):
+        vwap = (close* volume).cumsum() / close.cumsum()
+        return vwap
+
+    def calculate_obv(self, data):
+        obv = (np.sign(data['close'].diff()) * data['volume']).fillna(0).cumsum()
+        return obv
+
+    def calculate_macd(self, data, slow=26, fast=12, signal=9, i=1):
+        data['EMA_Fast'+str(fast)] = data['close'].ewm(span=fast, adjust=False).mean()
+        data['EMA_Slow'+str(slow)] = data['close'].ewm(span=slow, adjust=False).mean()
+        data['MACD'+str(i)] = data['EMA_Fast'+str(fast)] - data['EMA_Slow'+str(slow)]
+        data['MACD_Signal'+str(signal)] = data['MACD'+str(i)].ewm(span=signal, adjust=False).mean()
+        return data
+    
+    def calculate_stochastic_oscillator(self, data, window=14):
+        data['Lowest_Low'+str(window)] = data['low'].rolling(window=window).min()
+        data['Highest_High'+str(window)] = data['high'].rolling(window=window).max()
+        data['Stochastic_Oscillator'+str(window)] = 100 * ((data['close'] - data['Lowest_Low'+str(window)]) / (data['Highest_High'+str(window)] - data['Lowest_Low'+str(window)]))
+        return data
+
+    def calculate_bollinger_bands(self, data, window=20):
+        data['SMA'+str(window)] = data['close'].rolling(window=window).mean()
+        data['STD'+str(window)] = data['close'].rolling(window=window).std()
+        data['Bollinger_Upper'+str(window)] = data['SMA'+str(window)] + (data['STD'+str(window)] * 2)
+        data['Bollinger_Lower'+str(window)] = data['SMA'+str(window)] - (data['STD'+str(window)] * 2)
+        return data
+
+    def calculate_cci(self, data, window=20):
+        TP = (data['high'] + data['low'] + data['close']) / 3
+        CCI = (TP - TP.rolling(window=window).mean()) / (0.015 * TP.rolling(window=window).std())
+        data['CCI'+str(window)] = CCI
+        return data
+    
+    def calculate_williams_r(self, data, window=14):
+        data['Highest_High'+str(window)] = data['high'].rolling(window=window).max()
+        data['Lowest_Low'+str(window)] = data['low'].rolling(window=window).min()
+        data['Williams_%R'+str(window)] = (data['Highest_High'+str(window)] - data['close']) / (data['Highest_High'+str(window)] - data['Lowest_Low'+str(window)]) * -100
+        return data
+
     def calculate_price_change_features(self, data):
         data['Price_Change'] = data['close'].diff()
         data['Price_Change_Percent'] = data['Price_Change'] / data['close'].shift(1) * 100
@@ -21,15 +73,6 @@ class PREPARE_DATA_FOR_TRAIN :
         data['Percentage_Change'] = (data['close'] - data['close'].shift(1)) / data['close'].shift(1) * 100
         return data
     
-    def calculate_volume_features(self, data):
-        data['Volume_Rate_of_Change'] = (data['volume'] - data['volume'].shift(1)) / data['volume'].shift(1) * 100
-        data['Average_Volume'] = data['volume'].rolling(window=20).mean()
-        data['Volume_to_Average_Volume_Ratio'] = data['volume'] / data['Average_Volume']
-        data['Total_Volume'] = data['volume'].rolling(window=20).sum()
-        data['Previous_Volume'] = data['volume'].shift(1)
-        return data
-
-
     def calculate_volume_features(self, data):
         # محاسبه فیچرهای مرتبط با حجم معاملات
         data['Volume_Rate_of_Change'] = (data['volume'] - data['volume'].shift(1)) / data['volume'].shift(1) * 100
@@ -109,17 +152,28 @@ class PREPARE_DATA_FOR_TRAIN :
             else:
                 return 8
 
-    def ready(self, data):
+    def ready(self, data, Forbidden_list):
 
+        for macd_ in range(26, 52) :
+            self.calculate_macd(data, macd_, macd_-14, macd_-17, macd_)
+        for sto_ in range(14, 52) :    
+            self.calculate_stochastic_oscillator(data, sto_)
+        for bb_ in range(20, 52) :    
+            self.calculate_bollinger_bands(data, bb_)
+        for cci_ in range(20, 52):    
+            self.calculate_cci(data, cci_)
+        for will_ in range(14, 52):    
+            self.calculate_williams_r(data, will_)
+            
         data = self.calculate_percentage_change(data)
         data = self.calculate_volume_features(data)
         data = self.calculate_price_change_features(data)
-        data = self.calculate_volume_features(data)
         data['ATR'] = self.calculate_atr(data, 10)
         data['ATR1'] = self.calculate_atr(data, 14)
         data['ATR2'] = self.calculate_atr(data, 21)
         data['ATR3'] = self.calculate_atr(data, 50)
-
+        data['vwap'] = self.calculate_vwap(data['close'], data['volume'])
+        data['obv'] = self.calculate_obv(data)
         fibonacci_retracement = FibonacciRetracement(pd.DataFrame(data['close']))
         fibonacci_retracement.calculate_fibonacci_retracement()
         data['fibo1'] = fibonacci_retracement.df['fibonacci_1']
@@ -154,6 +208,11 @@ class PREPARE_DATA_FOR_TRAIN :
         data['candle_body'] = data['close'] - data['open']
         data['upper_shadow'] = data['high'] - data[['open', 'close']].max(axis=1)
         data['lower_shadow'] = data[['open', 'close']].min(axis=1) - data['low']
+        
+        N = 5  # طول فیلتر
+        b = np.ones(N) / N
+        a = 1  # فیلتر FIR، پس a = 1
+        data['Filtered'] = lfilter(b, a, data['close'])
 
         for i in range (3, 150):
             data[f'ma{i}'] = self.moving_average(data['close'], i)
@@ -163,7 +222,7 @@ class PREPARE_DATA_FOR_TRAIN :
 
 
         data = data[151:]
-        # Forbidden_list = Forbidden_list[151:]
+        Forbidden_list = Forbidden_list[151:]
 
         # print("start to calculate indicators")
         indicators = ta.add_all_ta_features(data.copy(), "open", "high", "low", "close", "volume", fillna=True)
@@ -176,25 +235,25 @@ class PREPARE_DATA_FOR_TRAIN :
 
 
         target = data['close']
-        target = ((target - target.shift(-1) )> 0 ).map({True: 1, False: 0}).fillna(0)
+        target = ((target - target.shift(-1) )> 0 ).map({True: 0, False: 1}).fillna(0)
         Hour = data["Hour"]
         data = data - data.shift(+1)
         
         data = data[1:]
-        # Forbidden_list = Forbidden_list[1:]
+        Forbidden_list = Forbidden_list[1:]
         Hour = Hour[1:]
         target = target[1:]
 
         data = data[:-1]
-        # Forbidden_list = Forbidden_list[:-1]
+        Forbidden_list = Forbidden_list[:-1]
         Hour = Hour[:-1]
         target = target[:-1]
 
         data["Hour"] = Hour
         data.reset_index(inplace=True,drop=True)
         target.reset_index(inplace=True, drop=True)
-        # Forbidden_list.reset_index(inplace = True, drop =True )
-        return data, target
+        Forbidden_list.reset_index(inplace = True, drop =True )
+        return data, target, Forbidden_list
 
 
 
